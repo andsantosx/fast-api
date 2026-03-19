@@ -1,15 +1,24 @@
-from fastapi import FastAPI
 from http import HTTPStatus
 
-from fast_zero.schemas import Message
+from fastapi import FastAPI
 
-app = FastAPI(title='API de Estudos', description='API para estudos de FastAPI', version='0.1.0')
+from fast_zero.schemas import Message, UserDB, UserPublic, UserSchema
 
-
-@app.get(
-    '/',
-    status_code=HTTPStatus.OK,
-    response_model=Message
+app = FastAPI(
+    title='API de Estudos', description='API para estudos de FastAPI'
 )
+
+database = []
+
+
+@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
     return {'message': 'Olá Mundo!'}
+
+
+@app.post('/users/', response_model=UserPublic, status_code=HTTPStatus.CREATED)
+def create_user(user: UserSchema):
+    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+    database.append(user_with_id)
+
+    return user_with_id
