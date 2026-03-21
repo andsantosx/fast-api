@@ -1,12 +1,22 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 
-from fast_zero.schemas import Message, UserDB, UserPublic, UserSchema
+from fast_zero.schemas import Message, UserDB, UserList, UserPublic, UserSchema
 
 app = FastAPI(
     title='API de Estudos', description='API para estudos de FastAPI'
 )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={'message': exc.detail},
+    )
+
 
 database = []
 
@@ -16,9 +26,54 @@ def read_root():
     return {'message': 'Olá Mundo!'}
 
 
+@app.get('/users/{user_id}', response_model=UserPublic)
+def read_user(user_id: int):
+    if user_id < 1 or user_id > len(database):
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='não tem papito...',
+        )
+
+    return database[user_id - 1]
+
+
 @app.post('/users/', response_model=UserPublic, status_code=HTTPStatus.CREATED)
 def create_user(user: UserSchema):
     user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
     database.append(user_with_id)
 
     return user_with_id
+
+
+@app.get('/users/', status_code=HTTPStatus.OK, response_model=UserList)
+def read_users():
+    return {'users': database}
+
+
+@app.put(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+)
+def update_user(user_id: int, user: UserSchema):
+    user_with_id = UserDB(**user.model_dump(), id=user_id)
+
+    if user_id < 1 or user_id > len(database):
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='não tem papito...',
+        )
+
+    database[user_id - 1] = user_with_id
+    return user_with_id
+
+
+@app.delete(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+)
+def delete_user(user_id: int):
+    if user_id < 1 or user_id > len(database):
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='não tem papito...',
+        )
+
+    return database.pop(user_id - 1)
