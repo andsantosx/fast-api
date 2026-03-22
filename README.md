@@ -1,6 +1,6 @@
 # Fast Zero - FastAPI Project
 
-Um projeto FastAPI organizado e pronto para desenvolvimento.
+Um projeto de estudo FastAPI.
 
 ## Como rodar
 
