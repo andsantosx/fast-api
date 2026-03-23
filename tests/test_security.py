@@ -2,14 +2,16 @@ from http import HTTPStatus
 
 import jwt
 
-from fast_zero.security import ALGORITHM, SECRET_KEY, create_access_token
+from fast_zero.security import create_access_token
 
 
-def test_jwt():
+def test_jwt(set_settings):
     data = {'test': 'test'}
     token = create_access_token(data)
 
-    decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    decoded = jwt.decode(
+        token, set_settings.SECRET_KEY, algorithms=[set_settings.ALGORITHM]
+    )
 
     assert decoded['test'] == data['test']
     assert 'exp' in decoded

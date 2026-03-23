@@ -1,14 +1,6 @@
 from http import HTTPStatus
 
-from fast_zero.database import get_session
 from fast_zero.schemas import UserPublic
-
-
-def test_read_root_deve_retornar_ola_mundo(client):
-    response = client.get('/')
-
-    assert response.json() == {'message': 'Olá Mundo!'}
-    assert response.status_code == HTTPStatus.OK
 
 
 def test_create_user(client):
@@ -77,6 +69,19 @@ def test_read_user_not_found(client, token):
     assert response.json() == {'message': 'Not enough permissions'}
 
 
+def test_read_user_success(client, user, token):
+    response = client.get(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+    }
+
+
 def test_update_user(client, user, token):
     response = client.put(
         '/users/1',
@@ -111,26 +116,6 @@ def test_update_user_not_found(client, token):
     assert response.json() == {'message': 'Not enough permissions'}
 
 
-def test_delete_user(client, user, token):
-    response = client.delete(
-        '/users/1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'Usuário deletado papito'}
-
-
-def test_delete_user_not_found(client, token):
-    response = client.delete(
-        '/users/999',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json() == {'message': 'Not enough permissions'}
-
-
 def test_update_integrity_error(client, user, token):
     response = client.post(
         '/users/',
@@ -156,21 +141,21 @@ def test_update_integrity_error(client, user, token):
     assert response.json() == {'message': 'Usuário ou email já existe'}
 
 
-def test_get_session():
-    session = next(get_session())
-    assert session is not None
-
-
-def test_get_token(client, user):
-    response = client.post(
-        '/token',
-        data={
-            'username': user.email,
-            'password': user.clean_password,
-        },
+def test_delete_user(client, user, token):
+    response = client.delete(
+        '/users/1',
+        headers={'Authorization': f'Bearer {token}'},
     )
-    token = response.json()
 
     assert response.status_code == HTTPStatus.OK
-    assert token['token_type'] == 'bearer'
-    assert 'access_token' in token
+    assert response.json() == {'message': 'Usuário deletado papito'}
+
+
+def test_delete_user_not_found(client, token):
+    response = client.delete(
+        '/users/999',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'message': 'Not enough permissions'}

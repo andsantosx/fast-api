@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import select
 
+from fast_zero.database import get_session
 from fast_zero.models import User
 
 
@@ -44,3 +45,8 @@ def test_update_user(session, mock_db_time):
 
     assert new_user.username == 'bob'
     assert isinstance(new_user.updated_at, datetime)
+
+
+def test_get_session():
+    session = next(get_session())
+    assert session is not None
