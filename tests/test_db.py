@@ -1,35 +1,36 @@
 from dataclasses import asdict
 from datetime import datetime
 
+import pytest
 from sqlalchemy import select
 
 from fast_zero.database import get_session
 from fast_zero.models import User
 
 
-def test_create_user(session, mock_db_time):
+@pytest.mark.asyncio
+async def test_create_user(session, mock_db_time):
     with mock_db_time(model=User) as time:
         new_user = User(
-            username='alice',
-            email='alice@exemple.com',
-            password='secret',
+            username='alice', password='secret', email='teste@test'
         )
         session.add(new_user)
-        session.commit()
+        await session.commit()
 
-    user = session.scalar(select(User).where(User.username == 'alice'))
+    user = await session.scalar(select(User).where(User.username == 'alice'))
 
     assert asdict(user) == {
         'id': 1,
         'username': 'alice',
-        'email': 'alice@exemple.com',
         'password': 'secret',
+        'email': 'teste@test',
         'created_at': time,
-        'updated_at': time,
+        'updated_at': time,  # Exercício
     }
 
 
-def test_update_user(session, mock_db_time):
+@pytest.mark.asyncio
+async def test_update_user(session, mock_db_time):
     with mock_db_time(model=User):
         new_user = User(
             username='alice',
@@ -37,16 +38,18 @@ def test_update_user(session, mock_db_time):
             password='secret',
         )
         session.add(new_user)
-        session.commit()
+        await session.commit()
+        await session.refresh(new_user)
 
         new_user.username = 'bob'
-        session.commit()
-        session.refresh(new_user)
+        await session.commit()
+        await session.refresh(new_user)
 
     assert new_user.username == 'bob'
     assert isinstance(new_user.updated_at, datetime)
 
 
-def test_get_session():
-    session = next(get_session())
-    assert session is not None
+@pytest.mark.asyncio
+async def test_get_session():
+    session = get_session()
+    assert await anext(session) is not None

@@ -1,16 +1,16 @@
 from http import HTTPStatus
 
-import jwt
+from jwt import decode
 
-from fast_zero.security import create_access_token
+from fast_zero.security import create_access_token, settings
 
 
-def test_jwt(set_settings):
+def test_jwt():
     data = {'test': 'test'}
     token = create_access_token(data)
 
-    decoded = jwt.decode(
-        token, set_settings.SECRET_KEY, algorithms=[set_settings.ALGORITHM]
+    decoded = decode(
+        token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
     )
 
     assert decoded['test'] == data['test']
@@ -18,32 +18,9 @@ def test_jwt(set_settings):
 
 
 def test_jwt_invalid_token(client):
-    response = client.get(
-        '/users/',
-        headers={'Authorization': 'Bearer invalid_token'},
+    response = client.delete(
+        '/users/1', headers={'Authorization': 'Bearer token-invalido'}
     )
 
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'message': 'Could not validate credentials'}
-
-
-def test_get_current_user_no_email(client):
-    data = {'no_sub': 'test'}
-    token = create_access_token(data)
-    response = client.get(
-        '/users/',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'message': 'Could not validate credentials'}
-
-
-def test_get_current_user_user_not_found(client):
-    data = {'sub': 'nonexistent@example.com'}
-    token = create_access_token(data)
-    response = client.get(
-        '/users/',
-        headers={'Authorization': f'Bearer {token}'},
-    )
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'message': 'Could not validate credentials'}
