@@ -16,7 +16,7 @@ def test_create_user(client):
     assert response.status_code == HTTPStatus.CREATED
     response_data = response.json()
     assert 'access_token' in response_data
-    assert response_data['token_type'] == 'bearer'
+    assert response_data['token_type'] == 'Bearer'
     assert 'username' not in response_data
 
 
@@ -31,7 +31,7 @@ def test_create_user_username_already_exists(client, user):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'message': 'Usuário já existe'}
+    assert response.json() == {'detail': 'Usuário já existe'}
 
 
 def test_create_user_email_already_exists(client, user):
@@ -45,7 +45,7 @@ def test_create_user_email_already_exists(client, user):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'message': 'Email já existe'}
+    assert response.json() == {'detail': 'Email já existe'}
 
 
 def test_read_users(client, user, token):
@@ -66,7 +66,7 @@ def test_read_user_not_found(client, token):
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json() == {'message': 'Not enough permissions'}
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_read_user_success(client, user, token):
@@ -113,32 +113,22 @@ def test_update_user_not_found(client, token):
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json() == {'message': 'Not enough permissions'}
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_update_integrity_error(client, user, token):
-    response = client.post(
-        '/users/',
-        json={
-            'username': 'fausto',
-            'email': 'fausto@exemple.com',
-            'password': 'secret',
-        },
-    )
-    assert response.status_code == HTTPStatus.CREATED
-
+def test_update_integrity_error(client, user, other_user, token):
     response = client.put(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'fausto',
+            'username': other_user.username,
             'email': 'bob@exemple.com',
             'password': 'mynewpassword',
         },
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'message': 'Usuário ou email já existe'}
+    assert response.json() == {'detail': 'Usuário ou email já existe'}
 
 
 def test_delete_user(client, user, token):
@@ -158,4 +148,29 @@ def test_delete_user_not_found(client, token):
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json() == {'message': 'Not enough permissions'}
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_update_user_with_wrong_password(client, other_user, token):
+    response = client.put(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@exemple.com',
+            'password': 'wrongpassword',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_user_with_wrong_user(client, other_user, token):
+    response = client.delete(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}

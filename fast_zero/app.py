@@ -16,5 +16,5 @@ app.include_router(auth.router)
 async def http_exception_handler(request, exc):
     return JSONResponse(
         status_code=exc.status_code,
-        content={'message': exc.detail},
+        content={'detail': exc.detail},
     )

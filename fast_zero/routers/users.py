@@ -61,7 +61,7 @@ async def create_user(user: UserSchema, session: Session):
 
     access_token = create_access_token(data={'sub': db_user.email})
 
-    return {'access_token': access_token, 'token_type': 'bearer'}
+    return {'access_token': access_token, 'token_type': 'Bearer'}
 
 
 @router.get('/', response_model=UserList)
