@@ -3,7 +3,8 @@ from http import HTTPStatus
 import factory
 import factory.fuzzy
 import pytest
-from sqlalchemy import insert, select
+from sqlalchemy import insert
+from sqlalchemy.exc import DataError
 
 from fast_zero.models import Todo, TodoState
 
@@ -213,18 +214,12 @@ async def test_get_todo_all_fields(session, client, user, token):
 
 @pytest.mark.asyncio
 async def test_todo_invalid_state(session, user):
-
-    # Descobrimos que o SQLite não valida o Enum no commit
-    # Mas o SQLAlchemy vai falhar ao tentar mapear o valor de volta para o Enum
-    await session.execute(
-        insert(Todo).values(
-            title='Test',
-            description='Test',
-            state='invalid',
-            user_id=user.id,
+    with pytest.raises(DataError):
+        await session.execute(
+            insert(Todo).values(
+                title='Test',
+                description='Test',
+                state='invalid',
+                user_id=user.id,
+            )
         )
-    )
-    await session.commit()
-
-    with pytest.raises(LookupError):
-        await session.scalar(select(Todo).where(Todo.title == 'Test'))

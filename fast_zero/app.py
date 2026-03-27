@@ -1,7 +1,13 @@
+import asyncio
+import sys
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from fast_zero.routers import auth, common, todos, users
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 app = FastAPI(
     title='API de Estudos', description='API para estudos de FastAPI'
