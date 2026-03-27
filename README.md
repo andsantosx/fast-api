@@ -1,54 +1,77 @@
-# 🚀 Fast Zero - FastAPI & PostgreSQL Project
+# 🚀 Fast Zero - Projeto FastAPI & PostgreSQL
 
-Modern, production-ready FastAPI project with automated Docker orchestration and PostgreSQL integration.
-
----
-
-## 🛠️ Technology Stack
-
-- **[FastAPI](https://fastapi.tiangolo.com/)**: High-performance Python web framework.
-- **[PostgreSQL](https://www.postgresql.org/)**: Robust and scalable relational database.
-- **[SQLAlchemy](https://www.sqlalchemy.org/)**: Advanced ORM with async support.
-- **[Alembic](https://alembic.sqlalchemy.org/)**: Precise database migrations.
-- **[Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)**: Full container orchestration.
-- **[Pytest](https://docs.pytest.org/)**: Comprehensive test suite with [Testcontainers](https://testcontainers.com/).
-- **[Ruff](https://beta.ruff.rs/)**: Ultra-fast linting and formatting.
+Projeto FastAPI moderno, pronto para produção, com orquestração Docker automatizada e integração com PostgreSQL.
 
 ---
 
-## 🏗️ Prerequisites
+## 🛠️ Stack Tecnológica
 
-Ensure you have the following installed:
+- **[FastAPI](https://fastapi.tiangolo.com/)**: Framework web Python de alta performance.
+- **[PostgreSQL](https://www.postgresql.org/)**: Banco de dados relacional robusto e escalável.
+- **[SQLAlchemy](https://www.sqlalchemy.org/)**: ORM avançado com suporte assíncrono.
+- **[Alembic](https://alembic.sqlalchemy.org/)**: Gerenciamento preciso de migrações de banco de dados.
+- **[Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)**: Orquestração completa de containers.
+- **[Pytest](https://docs.pytest.org/)**: Suíte de testes abrangente com [Testcontainers](https://testcontainers.com/).
+- **[Ruff](https://beta.ruff.rs/)**: Linting e formatação ultra-rápidos.
+
+---
+
+## 🏗️ Pré-requisitos
+
+Certifique-se de ter instalado:
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-- [Poetry](https://python-poetry.org/) (optional, for local dev)
+- [Poetry](https://python-poetry.org/) (opcional, para desenvolvimento local)
 
 ---
 
-## 🚀 Getting Started (Docker - Recommended)
+## 🚀 Como Iniciar (Docker - Recomendado)
 
-The easiest way to run the project on any machine is via Docker Compose:
+A maneira mais fácil de rodar o projeto em qualquer máquina é via Docker Compose:
 
-1. **Clone the repository**:
+1. **Clone o repositório**:
 
    ```bash
    git clone <repo-url>
    cd fast-api
    ```
 
-2. **Start the environment**:
+2. **Configure o Ambiente**:
+   - Copie o arquivo de exemplo:
+     ```bash
+     cp .env.example .env
+     ```
+   - Atualize os valores no `.env` se necessário (ex: `SECRET_KEY`).
+
+3. **Inicie o ambiente**:
    ```bash
    docker compose up -d --build
    ```
 
-This command builds the application, starts a PostgreSQL instance, and automatically runs all database migrations. The API will be available at [http://localhost:8000](http://localhost:8000).
+Este comando constrói a aplicação, inicia uma instância do PostgreSQL e executa automaticamente todas as migrações do banco de dados. A API estará disponível em [http://localhost:8000](http://localhost:8000).
 
 ---
 
-## 🧪 Running Tests
+## 🔐 Configuração de Ambiente
 
-Tests are automated using **Testcontainers**, which spins up an ephemeral PostgreSQL instance on the fly. To run the tests, you must have Docker running:
+O projeto utiliza um arquivo `.env` para todas as configurações sensíveis. O formato da `DATABASE_URL` para PostgreSQL é:
+
+`DATABASE_URL="postgresql+psycopg://usuario:senha@host:porta/banco"`
+
+### ⚡ Por que `localhost:5432`?
+
+Ao rodar o projeto **localmente** (na sua máquina via `task run`), você usa `localhost:5432` porque o container Docker expõe a porta do banco de dados para a sua máquina.
+
+### 🐳 Por que a auto-configuração do Docker funciona?
+
+Ao rodar **dentro do Docker** (via `docker compose`), o sistema substitui automaticamente o host para `fastzero_database`. Isso significa que o **mesmo arquivo `.env`** funciona perfeitamente para ambos os ambientes, sem mudanças manuais! 🚀
+
+---
+
+## 🧪 Executando Testes
+
+Os testes são automatizados usando **Testcontainers**, que sobe uma instância efêmera do PostgreSQL dinamicamente. Para rodar os testes, você deve ter o Docker rodando:
 
 ```bash
 task test
@@ -56,40 +79,40 @@ task test
 
 ---
 
-## 🛠️ Local Development (Manual Setup)
+## 🛠️ Desenvolvimento Local (Setup Manual)
 
-1. **Install dependencies**:
+1. **Instale as dependências**:
 
    ```bash
    poetry install
    ```
 
-2. **Configure Environment**:
-   Ensure your `.env` file points to a running PostgreSQL instance.
+2. **Configure o Ambiente**:
+   Certifique-se de que seu arquivo `.env` aponta para uma instância ativa do PostgreSQL.
 
-3. **Useful Commands (via Taskipy)**:
-   - `task run`: Start local development server.
-   - `task test`: Execute all tests (with coverage).
-   - `task lint`: Check code quality with Ruff.
-   - `task format`: Auto-format code.
-   - `task alembic`: Database migration commands.
+3. **Comandos Úteis (via Taskipy)**:
+   - `task run`: Inicia o servidor de desenvolvimento local.
+   - `task test`: Executa todos os testes (com cobertura).
+   - `task lint`: Verifica a qualidade do código com Ruff.
+   - `task format`: Formata o código automaticamente.
+   - `task alembic`: Comandos de migração do Alembic.
 
 ---
 
-## 🗄️ Database Migrations
+## 🗄️ Migrações de Banco de Dados
 
-Migrations are automated via `entrypoint.sh` in Docker, but can be managed manually:
+As migrações são automatizadas via `entrypoint.sh` no Docker, mas podem ser gerenciadas manualmente:
 
 ```bash
-# Inside the app container
+# Dentro do container da aplicação
 docker compose exec fastzero_app poetry run alembic upgrade head
 
-# Or locally
+# Ou localmente
 task alembic upgrade head
 ```
 
 ---
 
-## 📝 Author
+## 📝 Autor
 
-Created with ⚡ by **andsantosx**.
+Criado com ⚡ por **andsantosx**.
