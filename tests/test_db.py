@@ -17,7 +17,9 @@ async def test_create_user(session, mock_db_time):
         session.add(new_user)
         await session.commit()
 
-    user = await session.scalar(select(User).where(User.username == 'alice'))
+        user = await session.scalar(
+            select(User).where(User.username == 'alice')
+        )
 
     assert asdict(user) == {
         'id': 1,
@@ -25,7 +27,8 @@ async def test_create_user(session, mock_db_time):
         'password': 'secret',
         'email': 'teste@test',
         'created_at': time,
-        'updated_at': time,  # Exercício
+        'updated_at': time,
+        'todos': [],
     }
 
 
